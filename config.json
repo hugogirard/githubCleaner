@@ -1,0 +1,28 @@
+{
+    "app": {
+        "name": "GitHub Repository Cleaner",
+        "version": "1.0.0",
+        "description": "A tool for managing and bulk deleting GitHub repositories"
+    },
+    "github": {
+        "apiUrl": "https://api.github.com",
+        "authUrl": "https://github.com/login/oauth/authorize",
+        "scopes": [
+            "repo",
+            "delete_repo"
+        ],
+        "perPage": 100
+    },
+    "ui": {
+        "toastDuration": 5000,
+        "cardGridMinWidth": "350px",
+        "confirmationRequired": true,
+        "showLanguageColors": true
+    },
+    "features": {
+        "bulkOperations": true,
+        "search": true,
+        "repositoryMetadata": true,
+        "responsiveDesign": true
+    }
+}
