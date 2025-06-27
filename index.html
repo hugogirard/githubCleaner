@@ -31,6 +31,10 @@
                     <button id="deleteSelectedBtn" class="btn btn-danger" disabled>Delete Selected</button>
                     <span id="selectedCount" class="selected-count">0 repositories selected</span>
                 </div>
+
+                <div class="safety-notice">
+                    🛡️ <strong>Safety Mode:</strong> Only showing your personal repositories
+                </div>
             </div>
 
             <div id="loadingIndicator" class="loading hidden">
@@ -54,6 +58,7 @@
                     <li>Search and filter repositories</li>
                     <li>Select multiple repositories for bulk operations</li>
                     <li>Safely delete repositories with confirmation</li>
+                    <li>🛡️ <strong>Safety: Only shows YOUR personal repositories</strong></li>
                 </ul>
             </div>
         </div>
@@ -107,7 +112,7 @@
 
             <div class="modal-actions">
                 <button id="previewSelectBtn" class="btn btn-danger">🗑️ Select for Deletion</button>
-                <button id="openInGitHubBtn" class="btn btn-primary" target="_blank">🔗 Open in GitHub</button>
+                <button id="openInGitHubBtn" class="btn btn-primary">🔗 Open in GitHub (New Tab)</button>
             </div>
         </div>
     </div>

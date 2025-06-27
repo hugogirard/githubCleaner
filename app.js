@@ -208,10 +208,25 @@ Paste your token here:`;
                 page++;
             }
 
-            this.repositories = repos;
-            this.filteredRepositories = [...repos];
+            // Filter to only show repositories owned by the current user
+            const userOwnedRepos = repos.filter(repo => {
+                return repo.owner && repo.owner.login === this.user.login;
+            });
+
+            console.log(`Total repositories found: ${repos.length}`);
+            console.log(`User-owned repositories: ${userOwnedRepos.length}`);
+            console.log(`Filtered out: ${repos.length - userOwnedRepos.length} repositories (organization/forked repos)`);
+
+            this.repositories = userOwnedRepos;
+            this.filteredRepositories = [...userOwnedRepos];
             this.updateRepositoryList();
-            this.showToast(`Loaded ${repos.length} repositories`, 'success');
+            
+            const filteredCount = repos.length - userOwnedRepos.length;
+            if (filteredCount > 0) {
+                this.showToast(`Loaded ${userOwnedRepos.length} personal repositories (filtered out ${filteredCount} org/forked repos for safety)`, 'success');
+            } else {
+                this.showToast(`Loaded ${userOwnedRepos.length} repositories`, 'success');
+            }
         } catch (error) {
             console.error('Failed to load repositories:', error);
             this.showToast('Failed to load repositories', 'error');
@@ -548,7 +563,7 @@ Paste your token here:`;
         if (!repo) return;
 
         this.currentPreviewRepo = repo;
-        this.previewTitle.textContent = `Preview: ${repo.name}`;
+        this.previewTitle.innerHTML = `Preview: <a href="${repo.html_url}" target="_blank" style="color: #3498db; text-decoration: none;">${repo.name}</a>`;
         this.openInGitHubBtn.onclick = () => window.open(repo.html_url, '_blank');
         
         // Show modal and loading state
@@ -618,6 +633,7 @@ Paste your token here:`;
         this.repoDetails.innerHTML = `
             <h4>📊 Repository Information</h4>
             <p><strong>Full Name:</strong> ${repo.full_name}</p>
+            <p><strong>GitHub URL:</strong> <a href="${repo.html_url}" target="_blank" style="color: #3498db; text-decoration: none;">${repo.html_url}</a></p>
             <p><strong>Description:</strong> ${repo.description || 'No description'}</p>
             <p><strong>Language:</strong> ${repo.language || 'Not specified'}</p>
             <p><strong>Created:</strong> ${new Date(repo.created_at).toLocaleDateString()}</p>
