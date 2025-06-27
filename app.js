@@ -29,6 +29,21 @@ class GitHubRepoManager {
         this.confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
         this.cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
         this.toastContainer = document.getElementById('toastContainer');
+        
+        // Preview modal elements
+        this.previewModal = document.getElementById('previewModal');
+        this.previewTitle = document.getElementById('previewTitle');
+        this.closePreviewBtn = document.getElementById('closePreviewBtn');
+        this.previewLoading = document.getElementById('previewLoading');
+        this.previewData = document.getElementById('previewData');
+        this.repoDetails = document.getElementById('repoDetails');
+        this.repoStats = document.getElementById('repoStats');
+        this.fileBrowser = document.getElementById('fileBrowser');
+        this.readmeContent = document.getElementById('readmeContent');
+        this.previewSelectBtn = document.getElementById('previewSelectBtn');
+        this.openInGitHubBtn = document.getElementById('openInGitHubBtn');
+        
+        this.currentPreviewRepo = null;
     }
 
     bindEvents() {
@@ -41,10 +56,21 @@ class GitHubRepoManager {
         this.confirmDeleteBtn.addEventListener('click', () => this.deleteSelectedRepositories());
         this.cancelDeleteBtn.addEventListener('click', () => this.hideDeleteConfirmation());
         
-        // Close modal when clicking outside
+        // Preview modal events
+        this.closePreviewBtn.addEventListener('click', () => this.hidePreviewModal());
+        this.previewSelectBtn.addEventListener('click', () => this.selectRepoFromPreview());
+        this.openInGitHubBtn.addEventListener('click', () => this.openRepoInGitHub());
+        
+        // Close modals when clicking outside
         this.deleteModal.addEventListener('click', (e) => {
             if (e.target === this.deleteModal) {
                 this.hideDeleteConfirmation();
+            }
+        });
+        
+        this.previewModal.addEventListener('click', (e) => {
+            if (e.target === this.previewModal) {
+                this.hidePreviewModal();
             }
         });
     }
@@ -273,6 +299,22 @@ Paste your token here:`;
                 this.updateCardSelection(repoId, e.target.checked);
             });
         });
+        
+        // Bind preview button events
+        this.repositoryList.querySelectorAll('.preview-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const repoId = parseInt(e.target.dataset.repoId);
+                this.showRepositoryPreview(repoId);
+            });
+        });
+        
+        // Bind preview link events
+        this.repositoryList.querySelectorAll('.repo-preview-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                const repoId = parseInt(e.target.dataset.repoId);
+                this.showRepositoryPreview(repoId);
+            });
+        });
     }
 
     createRepositoryCard(repo) {
@@ -286,7 +328,8 @@ Paste your token here:`;
                     <input type="checkbox" class="repo-checkbox" data-repo-id="${repo.id}" ${isSelected ? 'checked' : ''}>
                     <div class="repo-info">
                         <div class="repo-name">
-                            <a href="${repo.html_url}" target="_blank">${repo.name}</a>
+                            <span class="repo-preview-link" data-repo-id="${repo.id}">${repo.name}</span>
+                            <a href="${repo.html_url}" target="_blank" title="Open in GitHub">🔗</a>
                         </div>
                         ${repo.description ? `<div class="repo-description">${repo.description}</div>` : ''}
                         <div class="repo-meta">
@@ -299,6 +342,9 @@ Paste your token here:`;
                             <span>⭐ ${repo.stargazers_count}</span>
                             <span>🍴 ${repo.forks_count}</span>
                             <span>📅 ${new Date(repo.updated_at).toLocaleDateString()}</span>
+                        </div>
+                        <div class="repo-actions">
+                            <button class="btn btn-secondary preview-btn" data-repo-id="${repo.id}">👀 Preview</button>
                         </div>
                     </div>
                 </div>
@@ -495,6 +541,202 @@ Paste your token here:`;
         setTimeout(() => {
             toast.remove();
         }, 5000);
+    }
+
+    async showRepositoryPreview(repoId) {
+        const repo = this.repositories.find(r => r.id === repoId);
+        if (!repo) return;
+
+        this.currentPreviewRepo = repo;
+        this.previewTitle.textContent = `Preview: ${repo.name}`;
+        this.openInGitHubBtn.onclick = () => window.open(repo.html_url, '_blank');
+        
+        // Show modal and loading state
+        this.previewModal.classList.remove('hidden');
+        this.previewLoading.classList.remove('hidden');
+        this.previewData.classList.add('hidden');
+        
+        try {
+            await this.loadRepositoryPreview(repo);
+        } catch (error) {
+            console.error('Failed to load repository preview:', error);
+            this.showToast('Failed to load repository preview', 'error');
+            this.hidePreviewModal();
+        }
+    }
+
+    async loadRepositoryPreview(repo) {
+        try {
+            // Load repository details, contents, and README
+            const [contents, readme] = await Promise.all([
+                this.loadRepositoryContents(repo),
+                this.loadRepositoryReadme(repo)
+            ]);
+
+            // Update repository details
+            this.updateRepositoryDetails(repo);
+            
+            // Update file browser
+            this.updateFileBrowser(contents);
+            
+            // Update README
+            this.updateReadmeContent(readme);
+            
+            // Show data and hide loading
+            this.previewLoading.classList.add('hidden');
+            this.previewData.classList.remove('hidden');
+            
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async loadRepositoryContents(repo) {
+        try {
+            const response = await this.makeRequest(`https://api.github.com/repos/${repo.full_name}/contents`);
+            return response || [];
+        } catch (error) {
+            console.warn('Could not load repository contents:', error);
+            return [];
+        }
+    }
+
+    async loadRepositoryReadme(repo) {
+        try {
+            const response = await this.makeRequest(`https://api.github.com/repos/${repo.full_name}/readme`);
+            if (response && response.content) {
+                // Decode base64 content
+                return atob(response.content.replace(/\s/g, ''));
+            }
+        } catch (error) {
+            console.warn('No README found:', error);
+        }
+        return null;
+    }
+
+    updateRepositoryDetails(repo) {
+        this.repoDetails.innerHTML = `
+            <h4>📊 Repository Information</h4>
+            <p><strong>Full Name:</strong> ${repo.full_name}</p>
+            <p><strong>Description:</strong> ${repo.description || 'No description'}</p>
+            <p><strong>Language:</strong> ${repo.language || 'Not specified'}</p>
+            <p><strong>Created:</strong> ${new Date(repo.created_at).toLocaleDateString()}</p>
+            <p><strong>Updated:</strong> ${new Date(repo.updated_at).toLocaleDateString()}</p>
+            <p><strong>Default Branch:</strong> ${repo.default_branch}</p>
+        `;
+
+        this.repoStats.innerHTML = `
+            <h4>📈 Statistics</h4>
+            <div class="stat-item">
+                <span>⭐ Stars:</span>
+                <span class="stat-value">${repo.stargazers_count}</span>
+            </div>
+            <div class="stat-item">
+                <span>🍴 Forks:</span>
+                <span class="stat-value">${repo.forks_count}</span>
+            </div>
+            <div class="stat-item">
+                <span>👀 Watchers:</span>
+                <span class="stat-value">${repo.watchers_count}</span>
+            </div>
+            <div class="stat-item">
+                <span>🚨 Issues:</span>
+                <span class="stat-value">${repo.open_issues_count}</span>
+            </div>
+            <div class="stat-item">
+                <span>📦 Size:</span>
+                <span class="stat-value">${this.formatFileSize(repo.size * 1024)}</span>
+            </div>
+            <div class="stat-item">
+                <span>🔒 Visibility:</span>
+                <span class="stat-value">${repo.private ? 'Private' : 'Public'}</span>
+            </div>
+        `;
+    }
+
+    updateFileBrowser(contents) {
+        if (!contents || contents.length === 0) {
+            this.fileBrowser.innerHTML = '<p style="color: #7f8c8d; font-style: italic;">No files found or repository is empty</p>';
+            return;
+        }
+
+        const fileItems = contents.map(item => {
+            const icon = item.type === 'dir' ? '📁' : this.getFileIcon(item.name);
+            const size = item.size ? this.formatFileSize(item.size) : '';
+            
+            return `
+                <div class="file-item">
+                    <span class="file-icon">${icon}</span>
+                    <span class="file-name">${item.name}</span>
+                    <span class="file-size">${size}</span>
+                </div>
+            `;
+        }).join('');
+
+        this.fileBrowser.innerHTML = fileItems;
+    }
+
+    updateReadmeContent(readme) {
+        if (!readme) {
+            this.readmeContent.innerHTML = '<p style="color: #7f8c8d; font-style: italic;">No README file found</p>';
+            return;
+        }
+
+        // Basic markdown to HTML conversion
+        let htmlContent = readme
+            .replace(/#{3}\s+(.*)/g, '<h3>$1</h3>')
+            .replace(/#{2}\s+(.*)/g, '<h2>$1</h2>')
+            .replace(/#{1}\s+(.*)/g, '<h1>$1</h1>')
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/`(.*?)`/g, '<code>$1</code>')
+            .replace(/```([\s\S]*?)```/g, '<pre>$1</pre>')
+            .replace(/\n/g, '<br>');
+
+        this.readmeContent.innerHTML = htmlContent;
+    }
+
+    getFileIcon(filename) {
+        const ext = filename.split('.').pop()?.toLowerCase();
+        const icons = {
+            'js': '📄', 'ts': '📘', 'html': '🌐', 'css': '🎨',
+            'json': '📋', 'md': '📖', 'txt': '📝', 'yml': '⚙️',
+            'yaml': '⚙️', 'xml': '📰', 'py': '🐍', 'java': '☕',
+            'cpp': '⚡', 'c': '⚡', 'h': '📎', 'php': '🐘',
+            'rb': '💎', 'go': '🐹', 'rs': '⚙️', 'sh': '💻',
+            'sql': '🗃️', 'png': '🖼️', 'jpg': '🖼️', 'gif': '🖼️',
+            'svg': '🎨', 'pdf': '📄', 'zip': '📦', 'tar': '📦'
+        };
+        return icons[ext] || '📄';
+    }
+
+    formatFileSize(bytes) {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    hidePreviewModal() {
+        this.previewModal.classList.add('hidden');
+        this.currentPreviewRepo = null;
+    }
+
+    selectRepoFromPreview() {
+        if (this.currentPreviewRepo) {
+            this.selectedRepos.add(this.currentPreviewRepo.id);
+            this.updateSelectedCount();
+            this.updateCardSelection(this.currentPreviewRepo.id, true);
+            this.hidePreviewModal();
+            this.showToast(`${this.currentPreviewRepo.name} selected for deletion`, 'success');
+        }
+    }
+
+    openRepoInGitHub() {
+        if (this.currentPreviewRepo) {
+            window.open(this.currentPreviewRepo.html_url, '_blank');
+        }
     }
 }
 

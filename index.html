@@ -73,6 +73,45 @@
         </div>
     </div>
 
+    <!-- Repository Preview Modal -->
+    <div id="previewModal" class="modal hidden">
+        <div class="modal-content preview-modal">
+            <div class="modal-header">
+                <h3 id="previewTitle">Repository Preview</h3>
+                <button id="closePreviewBtn" class="btn btn-secondary">✕ Close</button>
+            </div>
+
+            <div id="previewContent" class="preview-content">
+                <div id="previewLoading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading repository contents...</p>
+                </div>
+
+                <div id="previewData" class="preview-data hidden">
+                    <div class="repo-summary">
+                        <div id="repoDetails" class="repo-details"></div>
+                        <div id="repoStats" class="repo-stats"></div>
+                    </div>
+
+                    <div class="file-browser">
+                        <h4>📁 Repository Contents</h4>
+                        <div id="fileBrowser" class="file-list"></div>
+                    </div>
+
+                    <div class="readme-section">
+                        <h4>📖 README</h4>
+                        <div id="readmeContent" class="readme-content">No README found</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button id="previewSelectBtn" class="btn btn-danger">🗑️ Select for Deletion</button>
+                <button id="openInGitHubBtn" class="btn btn-primary" target="_blank">🔗 Open in GitHub</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notifications -->
     <div id="toastContainer" class="toast-container"></div>
 

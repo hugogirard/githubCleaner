@@ -208,20 +208,20 @@ main {
 }
 
 .repo-name {
-    font-size: 18px;
-    font-weight: 600;
-    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    gap: 8px;
     margin-bottom: 8px;
-    word-break: break-word;
 }
 
 .repo-name a {
-    color: #3498db;
-    text-decoration: none;
+    font-size: 14px;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
 }
 
 .repo-name a:hover {
-    text-decoration: underline;
+    opacity: 1;
 }
 
 .repo-description {
@@ -243,6 +243,12 @@ main {
     display: flex;
     align-items: center;
     gap: 4px;
+}
+
+.repo-actions {
+    margin-top: 12px;
+    display: flex;
+    gap: 8px;
 }
 
 .language-color {
@@ -457,42 +463,215 @@ main {
     display: none !important;
 }
 
-/* Responsive Design */
+/* Repository Preview Modal Styles */
+.preview-modal {
+    max-width: 900px;
+    width: 95%;
+    max-height: 90vh;
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+    border-bottom: 1px solid #ecf0f1;
+    background: #f8f9fa;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #2c3e50;
+}
+
+.preview-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 30px;
+}
+
+.repo-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.repo-details {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.repo-details h4 {
+    margin: 0 0 10px 0;
+    color: #2c3e50;
+    font-size: 16px;
+}
+
+.repo-details p {
+    margin: 5px 0;
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+.repo-stats {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.repo-stats h4 {
+    margin: 0 0 10px 0;
+    color: #2c3e50;
+    font-size: 16px;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    margin: 8px 0;
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+.stat-value {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.file-browser {
+    margin-bottom: 25px;
+}
+
+.file-browser h4 {
+    margin: 0 0 15px 0;
+    color: #2c3e50;
+}
+
+.file-list {
+    background: #f8f9fa;
+    border-radius: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 15px;
+    border-bottom: 1px solid #ecf0f1;
+    color: #7f8c8d;
+    font-size: 14px;
+    font-family: 'Courier New', monospace;
+}
+
+.file-item:last-child {
+    border-bottom: none;
+}
+
+.file-item:hover {
+    background: #e9ecef;
+}
+
+.file-icon {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+.file-name {
+    flex: 1;
+}
+
+.file-size {
+    color: #95a5a6;
+    font-size: 12px;
+}
+
+.readme-section h4 {
+    margin: 0 0 15px 0;
+    color: #2c3e50;
+}
+
+.readme-content {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    max-height: 300px;
+    overflow-y: auto;
+    line-height: 1.6;
+    color: #2c3e50;
+}
+
+.readme-content h1,
+.readme-content h2,
+.readme-content h3 {
+    color: #2c3e50;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.readme-content h1:first-child,
+.readme-content h2:first-child,
+.readme-content h3:first-child {
+    margin-top: 0;
+}
+
+.readme-content code {
+    background: #e9ecef;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+}
+
+.readme-content pre {
+    background: #e9ecef;
+    padding: 15px;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+}
+
+.repo-preview-link {
+    color: #3498db;
+    text-decoration: none;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.repo-preview-link:hover {
+    text-decoration: underline;
+    color: #2980b9;
+}
+
+/* Responsive design for preview modal */
 @media (max-width: 768px) {
-    .container {
-        padding: 10px;
+    .preview-modal {
+        width: 100%;
+        height: 100vh;
+        max-height: 100vh;
+        border-radius: 0;
+        margin: 0;
     }
 
-    header {
-        flex-direction: column;
-        gap: 15px;
-        text-align: center;
-    }
-
-    .controls {
-        gap: 15px;
-    }
-
-    .bulk-actions {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .selected-count {
-        margin-left: 0;
-        text-align: center;
-    }
-
-    .repository-list {
+    .repo-summary {
         grid-template-columns: 1fr;
+        gap: 15px;
     }
 
-    .modal-content {
-        padding: 20px;
-        margin: 20px;
+    .modal-header {
+        padding: 15px 20px;
     }
 
-    .modal-actions {
-        flex-direction: column;
+    .preview-content {
+        padding: 15px 20px;
     }
 }
